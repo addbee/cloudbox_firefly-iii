@@ -1,7 +1,7 @@
 # cloudbox_mod-firefly-iii
 Firefly ansible role for Cloudbox based on cloudbox_mod template
 
-- [Firefly iii](https://github.com/firefly-iii/firefly-iii) - a self-hosted financial manager
+- [Firefly iii](https://github.com/firefly-iii/firefly-iii) - is a (self-hosted) manager for your personal finances. It can help you keep track of your expenses and income, so you can spend less and save more.
 - [Cloudbox](https://github.com/Cloudbox/Cloudbox) - Automated Cloud Media Server
 
 
