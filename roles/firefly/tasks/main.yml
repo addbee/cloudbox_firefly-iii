@@ -1,0 +1,104 @@
+#########################################################################
+# Title:            Community: Wallabag                                 #
+# Author(s):        addbee                                              #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  firefly/wallabag                                   #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Setting CloudFlare DNS Record"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: firefly
+  when: cloudflare_enabled
+
+- name: Stop and remove any existing containers
+  docker_container: "name={{ item }} state=absent"
+  with_items:
+    - firefly
+    - firefly-mysql
+
+- name: Create required directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/firefly
+    - /opt/firefly/mysql
+    - /opt/firefly/upload
+    - /opt/firefly/export
+
+- name: Create MySQL container for Firefly
+  docker_container:
+    name: firefly-mysql
+    image: mysql:5.7
+    pull: true
+    volumes:
+      - "/opt/firefly/mysql:/var/lib/mysql:rw"
+    networks:
+      - name: cloudbox
+        aliases:
+          - firefly-mysql
+    expose:
+      3306
+    env:
+      MYSQL_DATABASE: "firefly"
+      MYSQL_USER: "firefly"
+      MYSQL_PASSWORD: "firefly"
+      MYSQL_ROOT_PASSWORD: "firefly"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    restart_policy: unless-stopped
+
+- name: Wait for MySQL to init
+  pause:
+    seconds: 30
+      
+- name: Create and start Firefly III container
+  docker_container:
+    name: firefly
+    image: "jc5x/firefly-iii:latest"
+    pull: yes
+    links: 
+      - firefly-mysql
+    env:
+      TZ: "Europe/London"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      PASSWORD: "{{ user.pass }}"
+      VIRTUAL_HOST: "firefly.{{ user.domain }}"
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: "firefly.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+      APP_ENV: "local"
+      # Random 32 digit
+      APP_KEY: "a848d360e1514e18ae6e32a97737d532"
+      DB_HOST: "firefly-mysql"
+      DB_DATABASE: "firefly"
+      DB_USERNAME: "firefly"
+      DB_PASSWORD: "firefly"
+      TRUSTED_PROXIES: "**"
+      DB_CONNECTION: "mysql"
+      DB_PORT: 3306
+      SITE_OWNER: "{{ user.email }}"
+      LOG_CHANNEL: "stdout"
+      APP_LOG_LEVEL: "notice"
+
+    ports:
+      - "8066:80"
+    volumes:
+      - "/opt/firefly/export:/var/www/firefly-iii/storage/export:rw"
+      - "/opt/firefly/upload:/var/www/firefly-iii/storage/upload:rw"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - firefly
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started
+
+

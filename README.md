@@ -1,20 +1,14 @@
-# cloudbox_mod
-Blank Template to add custom Ansible roles to Cloudbox.
+# cloudbox_mod-firefly-iii
+Firefly ansible role for Cloudbox based on cloudbox_mod template
 
-## How to use this template
+- [Firefly iii](https://github.com/firefly-iii/firefly-iii) - a self-hosted financial manager
+- [Cloudbox](https://github.com/Cloudbox/Cloudbox) - Automated Cloud Media Server
+
+
+## How to use
 
 1. Clone this repo:
-
-    ```bash
-    git clone https://github.com/Cloudbox/cloudbox_mod.git ~/cloudbox_mod
-    ```
-
-1. CD into the `cloudbox_mod` folder:
-
-    ```bash
-    cd ~/cloudbox_mod
-    ```
-
+1. CD into the repo folder:
 1. If you have an Ansible vault password file, add the location to `ansible.cfg`:
 
     To edit:
@@ -39,58 +33,8 @@ Blank Template to add custom Ansible roles to Cloudbox.
     role_path = ~/cloudbox/roles
     vault_password_file = ~/.ansible_vault
     ```
-
-1. Create folders for the Ansible role:
-
-    ```bash
-    mkdir -p ~/cloudbox_mod/roles/newrole/tasks/
-    ```
-
-1. Place the task file there:
-
-    ```bash
-    touch ~/cloudbox_mod/roles/newrole/tasks/main.yml
-    ```
-
-1. Add custom variables into `settings.yml`:
-
-    ```
-    ~/cloudbox_mod/settings.yml
-    ```
-
-
-1. Add the Ansible role to `cloudbox_mod.yml`:
-
-    To edit:
-
-    ```bash
-    nano ~/cloudbox_mod/cloudbox_mod.yml
-    ```
-
-    Add the following line under `roles:`:
-    ```yaml
-        - { role: newrole, tags: ['newrole'] }
-    ```
-
-    Final result:
-    ```yaml
-    ---
-    - hosts: localhost
-      vars_files:
-        - settings.yml
-        - ['~/cloudbox/accounts.yml', '~/cloudbox/accounts.yml.default']
-        - ['~/cloudbox/settings.yml', '~/cloudbox/settings.yml.default']
-        - ['~/cloudbox/adv_settings.yml', '~/cloudbox/adv_settings.yml.default']
-      roles:
-        - { role: pre_tasks }
-        - { role: myrole, tags: ['myrole'] }
-        - { role: newrole, tags: ['newrole'] }
-    ```
-
-    Note: The `pre_tasks` role is required and should not be removed.
-
 1. Run the Ansible role:
 
     ```bash
-    sudo ansible-playbook cloudbox_mod.yml --tags newrole
+    sudo ansible-playbook cloudbox_mod.yml --tags firefly 
     ```
